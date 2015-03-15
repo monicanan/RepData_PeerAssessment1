@@ -30,10 +30,11 @@ hist(StepSum$steps, xlab = "total steps per day", main = "histgram")
 
 
 ```{r}
-mean <- mean(StepSum$steps)
-median <- median(StepSum$steps)
+mean1 <- mean(StepSum$steps)
+median1 <- median(StepSum$steps)
 ```
-mean is `r mean`, median is `r median`.
+mean is `r mean1`, median is `r median1`.
+
 #What is the average daily activity pattern?
 
 1.Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
@@ -88,8 +89,8 @@ For this part the weekdays() function may be of some help here. Use the dataset 
 new_activity$weekday <- weekdays(as.POSIXlt(new_activity$date))
 for (i in 1: length(new_activity$weekday)) {
     if(new_activity$weekday[i] %in% c("Saturday","Sunday")) {
-      new_activity$weekend[i] <- "weekend"
-    } else {new_activity$weekend[i] <- "weekday"}
+      new_activity$weekend1[i] <- "weekend"
+    } else {new_activity$weekend1[i] <- "weekday"}
 }
 ```
 
@@ -97,12 +98,12 @@ for (i in 1: length(new_activity$weekday)) {
 
 ```{r}
 library(lattice)
-Stepweekend <- aggregate(steps ~ interval, subset(new_activity, weekend == "weekend"), mean)
-Stepweekday<-aggregate(steps ~ interval, subset(new_activity, weekend == "weekday"), mean)
-Stepweekday$weekend <- "weekday"
-Stepweekend$weekend <- "weekend"
+Stepweekend <- aggregate(steps ~ interval, subset(new_activity, weekend1 == "weekend"), mean)
+Stepweekday<-aggregate(steps ~ interval, subset(new_activity, weekend1 == "weekday"), mean)
+Stepweekday$weekend1 <- "weekday"
+Stepweekend$weekend1 <- "weekend"
 readyplot <-rbind(Stepweekday, Stepweekend)
-xyplot(steps ~ interval|weekend, readyplot, type = "l", layout = c(1,2))
+xyplot(steps ~ interval|weekend1, readyplot, type = "l", layout = c(1,2))
 ```
 
 
