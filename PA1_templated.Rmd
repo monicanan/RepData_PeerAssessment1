@@ -1,0 +1,109 @@
+---
+title: "PA1_template.Rmd"
+output: html_document
+---
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+#loading and preprocessing the data
+
+```{r}
+a <- read.csv ("activity.csv")
+```
+#What is mean total number of steps taken per day?
+
+For this part of the assignment, you can ignore the missing values in the dataset.
+
+1.Calculate the total number of steps taken per day
+```{r}
+StepSum <- aggregate(steps ~ date, a, sum, na.action = na.omit)
+```
+
+2.If you do not understand the difference between a histogram and a barplot, research the difference between them. Make a histogram of the total number of steps taken each day
+```{r}
+hist(StepSum$steps, xlab = "total steps per day", main = "histgram")
+```
+
+3.Calculate and report the mean and median of the total number of steps taken per day
+
+
+```{r}
+mean <- mean(StepSum$steps)
+median <- median(StepSum$steps)
+```
+mean is `r mean`, median is `r median`.
+#What is the average daily activity pattern?
+
+1.Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
+```{r}
+StepAve <- aggregate(steps ~ interval, a, mean, na.action = na.omit)
+plot(steps ~ interval, StepAve, type = "l")
+```
+
+2.Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
+
+```{r}
+StepAve[which(StepAve$steps == max(StepAve$steps)),1]
+```
+
+#Imputing missing values
+
+Note that there are a number of days/intervals where there are missing values (coded as NA). The presence of missing days may introduce bias into some calculations or summaries of the data.
+
+1.Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
+```{r}
+length(which(is.na(a$steps)))
+```
+
+2.Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. here, i am using the mean for that 5-minute interval.
+3.Create a new dataset that is equal to the original dataset but with the missing data filled in.
+
+```{r}
+index_of_na <- which(is.na(a$steps))
+new_activity <- a
+for (i in index_of_na) {
+  new_activity$steps[i] <-with( StepAve, steps[interval == new_activity$interval[i]])
+  }
+```
+
+4.Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
+```{r}
+NewStepSum <- aggregate(steps ~ date, new_activity, sum)
+hist(NewStepSum$steps, xlab = "total steps per day", main = "new histgram")
+newmean <- mean(NewStepSum$steps)
+newmedian <- median(NewStepSum$steps)
+```
+
+mean is `r newmean`, median is `r newmedian`.
+
+#Are there differences in activity patterns between weekdays and weekends?
+
+For this part the weekdays() function may be of some help here. Use the dataset with the filled-in missing values for this part.
+
+1.Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
+
+```{r}
+new_activity$weekday <- weekdays(as.POSIXlt(new_activity$date))
+for (i in 1: length(new_activity$weekday)) {
+    if(new_activity$weekday[i] %in% c("Saturday","Sunday")) {
+      new_activity$weekend[i] <- "weekend"
+    } else {new_activity$weekend[i] <- "weekday"}
+}
+```
+
+2.Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). See the README file in the GitHub repository to see an example of what this plot should look like using simulated data.
+
+```{r}
+library(lattice)
+Stepweekend <- aggregate(steps ~ interval, subset(new_activity, weekend == "weekend"), mean)
+Stepweekday<-aggregate(steps ~ interval, subset(new_activity, weekend == "weekday"), mean)
+Stepweekday$weekend <- "weekday"
+Stepweekend$weekend <- "weekend"
+readyplot <-rbind(Stepweekday, Stepweekend)
+xyplot(steps ~ interval|weekend, readyplot, type = "l", layout = c(1,2))
+```
+
+
+
